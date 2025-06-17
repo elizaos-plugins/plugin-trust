@@ -1,0 +1,10 @@
+.env
+node_modules
+dist
+.eliza
+.elizadb
+.turbo
+docs
+coverage
+.cursor
+.elizadb*
