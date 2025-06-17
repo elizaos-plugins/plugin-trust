@@ -1,5 +1,6 @@
 import {
   type Action,
+  type ActionResult,
   type ActionExample,
   ChannelType,
   composePrompt,
@@ -129,7 +130,7 @@ export const updateRoleAction: Action = {
     state?: State,
     _options?: any,
     callback?: HandlerCallback
-  ): Promise<void> => {
+  ): Promise<ActionResult> => {
     if (!state) {
       logger.error('State is required for role assignment');
       throw new Error('State is required for role assignment');
@@ -152,7 +153,12 @@ export const updateRoleAction: Action = {
       await callback?.({
         text: "I couldn't find the world. This action only works in a world.",
       });
-      return;
+      return {
+        data: {
+          success: false,
+          error: 'World not found',
+        },
+      };
     }
 
     if (!world.metadata?.roles) {
@@ -234,16 +240,23 @@ export const updateRoleAction: Action = {
         actions: ['UPDATE_ROLE'],
         source: 'discord',
       });
-      return;
+      return {
+        data: {
+          success: false,
+          message: 'No valid role assignments found',
+        },
+      };
     }
 
     // Process each role assignment
     let worldUpdated = false;
+    const updatedRoles: Array<{ entityName: string; entityId: string; newRole: Role }> = [];
 
     for (const assignment of result) {
       let targetEntity = entities.find((e) => e.id === assignment.entityId);
       if (!targetEntity) {
         logger.error('Could not find an ID ot assign to');
+        continue;
       }
 
       const currentRole = world.metadata.roles[assignment.entityId];
@@ -262,6 +275,11 @@ export const updateRoleAction: Action = {
       world.metadata.roles[assignment.entityId] = assignment.newRole;
 
       worldUpdated = true;
+      updatedRoles.push({
+        entityName: targetEntity.names[0] || 'Unknown',
+        entityId: assignment.entityId,
+        newRole: assignment.newRole,
+      });
 
       await callback?.({
         text: `Updated ${targetEntity?.names[0]}'s role to ${assignment.newRole}.`,
@@ -275,6 +293,18 @@ export const updateRoleAction: Action = {
       await runtime.updateWorld(world);
       logger.info(`Updated roles in world metadata for server ${serverId}`);
     }
+
+    return {
+      data: {
+        success: worldUpdated,
+        updatedRoles,
+        totalProcessed: result.length,
+        totalUpdated: updatedRoles.length,
+      },
+      text: worldUpdated
+        ? `Successfully updated ${updatedRoles.length} role(s).`
+        : 'No roles were updated.',
+    };
   },
 
   examples: [

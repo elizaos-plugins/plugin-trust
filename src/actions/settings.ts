@@ -1,6 +1,7 @@
 import {
   type Action,
   type ActionExample,
+  ActionResult,
   ChannelType,
   composePrompt,
   composePromptFromState,
@@ -738,7 +739,7 @@ export const updateSettingsAction: Action = {
     state?: State,
     _options?: any,
     callback?: HandlerCallback
-  ): Promise<void> => {
+  ): Promise<ActionResult> => {
     try {
       if (!state) {
         logger.error('State is required for settings handler');
@@ -762,7 +763,10 @@ export const updateSettingsAction: Action = {
       if (!serverOwnership) {
         logger.error(`No server found for user ${message.entityId} in handler`);
         await generateErrorResponse(runtime, state, callback);
-        return;
+        return {
+          text: 'No server found where you are the owner',
+          data: { error: 'NO_SERVER_OWNERSHIP' },
+        };
       }
 
       const serverId = serverOwnership?.serverId;
@@ -770,7 +774,10 @@ export const updateSettingsAction: Action = {
 
       if (!serverId) {
         logger.error(`No server ID found for user ${message.entityId} in handler`);
-        return;
+        return {
+          text: 'No server ID found',
+          data: { error: 'NO_SERVER_ID' },
+        };
       }
 
       // Get settings state from world metadata
@@ -779,7 +786,10 @@ export const updateSettingsAction: Action = {
       if (!worldSettings) {
         logger.error(`No settings state found for server ${serverId} in handler`);
         await generateErrorResponse(runtime, state, callback);
-        return;
+        return {
+          text: 'No settings state found for server',
+          data: { error: 'NO_SETTINGS_STATE' },
+        };
       }
 
       // Extract setting values from message
@@ -804,7 +814,10 @@ export const updateSettingsAction: Action = {
         if (!updatedWorldSettings) {
           logger.error('Failed to retrieve updated settings state');
           await generateErrorResponse(runtime, state, callback);
-          return;
+          return {
+            text: 'Failed to retrieve updated settings state',
+            data: { error: 'SETTINGS_RETRIEVAL_FAILED' },
+          };
         }
 
         await generateSuccessResponse(
@@ -814,15 +827,39 @@ export const updateSettingsAction: Action = {
           updateResults.messages,
           callback
         );
+
+        return {
+          text: updateResults.messages.join('. '),
+          data: {
+            success: true,
+            updatedSettings: extractedSettings,
+            messages: updateResults.messages,
+          },
+        };
       } else {
         logger.info('No settings were updated');
         await generateFailureResponse(runtime, worldSettings, state, callback);
+
+        return {
+          text: 'No settings were updated from your message',
+          data: {
+            success: false,
+            reason: 'NO_VALID_SETTINGS_FOUND',
+          },
+        };
       }
     } catch (error) {
       logger.error(`Error in settings handler: ${error}`);
       if (state && callback) {
         await generateErrorResponse(runtime, state, callback);
       }
+
+      return {
+        text: 'An error occurred while updating settings',
+        data: {
+          error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
+        },
+      };
     }
   },
   examples: [
