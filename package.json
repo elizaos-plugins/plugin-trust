@@ -1,6 +1,6 @@
 {
   "name": "@elizaos/plugin-trust",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Trust and permission management plugin for ElizaOS",
   "main": "dist/index.js",
   "module": "dist/index.js",
