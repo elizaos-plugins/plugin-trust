@@ -764,6 +764,7 @@ export const updateSettingsAction: Action = {
         logger.error(`No server found for user ${message.entityId} in handler`);
         await generateErrorResponse(runtime, state, callback);
         return {
+          success: false,
           text: 'No server found where you are the owner',
           data: { error: 'NO_SERVER_OWNERSHIP' },
         };
@@ -775,6 +776,7 @@ export const updateSettingsAction: Action = {
       if (!serverId) {
         logger.error(`No server ID found for user ${message.entityId} in handler`);
         return {
+          success: false,
           text: 'No server ID found',
           data: { error: 'NO_SERVER_ID' },
         };
@@ -787,6 +789,7 @@ export const updateSettingsAction: Action = {
         logger.error(`No settings state found for server ${serverId} in handler`);
         await generateErrorResponse(runtime, state, callback);
         return {
+          success: false,
           text: 'No settings state found for server',
           data: { error: 'NO_SETTINGS_STATE' },
         };
@@ -815,6 +818,7 @@ export const updateSettingsAction: Action = {
           logger.error('Failed to retrieve updated settings state');
           await generateErrorResponse(runtime, state, callback);
           return {
+            success: false,
             text: 'Failed to retrieve updated settings state',
             data: { error: 'SETTINGS_RETRIEVAL_FAILED' },
           };
@@ -829,6 +833,7 @@ export const updateSettingsAction: Action = {
         );
 
         return {
+          success: true,
           text: updateResults.messages.join('. '),
           data: {
             success: true,
@@ -841,6 +846,7 @@ export const updateSettingsAction: Action = {
         await generateFailureResponse(runtime, worldSettings, state, callback);
 
         return {
+          success: false,
           text: 'No settings were updated from your message',
           data: {
             success: false,
@@ -855,6 +861,7 @@ export const updateSettingsAction: Action = {
       }
 
       return {
+        success: false,
         text: 'An error occurred while updating settings',
         data: {
           error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',

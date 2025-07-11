@@ -154,6 +154,7 @@ export const updateRoleAction: Action = {
         text: "I couldn't find the world. This action only works in a world.",
       });
       return {
+        success: false,
         data: {
           success: false,
           error: 'World not found',
@@ -241,6 +242,7 @@ export const updateRoleAction: Action = {
         source: 'discord',
       });
       return {
+        success: false,
         data: {
           success: false,
           message: 'No valid role assignments found',
@@ -295,6 +297,7 @@ export const updateRoleAction: Action = {
     }
 
     return {
+      success: worldUpdated,
       data: {
         success: worldUpdated,
         updatedRoles,

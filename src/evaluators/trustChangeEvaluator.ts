@@ -15,7 +15,7 @@ export const trustChangeEvaluator: Evaluator = {
     const trustEngine = runtime.getService('trust-engine') as any;
 
     if (!trustEngine) {
-      return null;
+      return;
     }
 
     try {
@@ -59,6 +59,7 @@ export const trustChangeEvaluator: Evaluator = {
           });
 
           return {
+            success: true,
             text: `Noted positive behavior (+10 trust)`,
             data: { impact: 10, positive: true, llmAnalysis: true },
           };
@@ -91,13 +92,14 @@ export const trustChangeEvaluator: Evaluator = {
           });
 
           return {
+            success: false,
             text: `Noted concerning behavior (${impact} trust)`,
             data: { impact, positive: false, llmAnalysis: true },
           };
         }
 
         // Neutral behavior - no trust change
-        return null;
+        return;
       }
 
       // Fallback to pattern matching only if LLM is not available
@@ -163,6 +165,7 @@ export const trustChangeEvaluator: Evaluator = {
           });
 
           return {
+            success: true,
             text: `Noted positive behavior: ${type} (+${impact} trust)`,
             data: { type, impact, positive: true },
           };
@@ -196,6 +199,7 @@ export const trustChangeEvaluator: Evaluator = {
           });
 
           return {
+            success: false,
             text: `Noted concerning behavior: ${type} (${impact} trust)`,
             data: { type, impact, positive: false },
           };
@@ -232,10 +236,10 @@ export const trustChangeEvaluator: Evaluator = {
       }
       */
 
-      return null;
+      return;
     } catch (error) {
       logger.error('[TrustChangeEvaluator] Error evaluating trust changes:', error);
-      return null;
+      return;
     }
   },
 

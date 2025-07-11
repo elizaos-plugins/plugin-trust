@@ -38,8 +38,9 @@ export const requestElevationAction: Action = {
 
     if (!requestData || !requestData.action) {
       return {
+        success: false,
         text: 'Please specify the action you need elevated permissions for. Example: "I need to manage roles to help moderate the channel"',
-        error: true,
+        error: 'No action specified',
       };
     }
 
@@ -69,6 +70,7 @@ export const requestElevationAction: Action = {
       if (result.approved) {
         const expiryTime = new Date(result.expiresAt!).toLocaleString();
         return {
+          success: true,
           text: `✅ Elevation approved! You have been granted temporary ${requestData.action} permissions until ${expiryTime}.
 
 Please use these permissions responsibly. All actions will be logged for audit.`,
@@ -93,6 +95,7 @@ Please use these permissions responsibly. All actions will be logged for audit.`
         }
 
         return {
+          success: false,
           text: denialMessage,
           data: {
             approved: false,
@@ -105,8 +108,9 @@ Please use these permissions responsibly. All actions will be logged for audit.`
     } catch (error) {
       logger.error('[RequestElevation] Error processing elevation request:', error);
       return {
+        success: false,
         text: 'Failed to process elevation request. Please try again.',
-        error: true,
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   },

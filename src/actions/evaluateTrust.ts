@@ -41,8 +41,9 @@ export const evaluateTrustAction: Action = {
     } else if (requestData?.entityName) {
       // TODO: Resolve entity name to ID using rolodex or other service
       return {
+        success: false,
         text: 'Entity name resolution not yet implemented. Please provide entity ID.',
-        error: true,
+        error: 'Entity name resolution not implemented',
       };
     } else {
       // Default to evaluating the message sender
@@ -77,6 +78,7 @@ export const evaluateTrustAction: Action = {
               : '➡️ Stable';
 
         return {
+          success: true,
           text: `Trust Profile for ${targetEntityId}:
 
 Overall Trust: ${trustProfile.overallTrust}/100
@@ -103,6 +105,7 @@ Last Updated: ${new Date(trustProfile.lastCalculated).toLocaleString()}`,
                   : 'Very Low';
 
         return {
+          success: true,
           text: `Trust Level: ${trustLevel} (${trustProfile.overallTrust}/100) based on ${trustProfile.interactionCount} interactions`,
           data: {
             trustScore: trustProfile.overallTrust,
@@ -114,8 +117,9 @@ Last Updated: ${new Date(trustProfile.lastCalculated).toLocaleString()}`,
     } catch (error) {
       logger.error('[EvaluateTrust] Error evaluating trust:', error);
       return {
+        success: false,
         text: 'Failed to evaluate trust. Please try again.',
-        error: true,
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   },

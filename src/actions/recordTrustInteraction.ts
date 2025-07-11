@@ -38,8 +38,9 @@ export const recordTrustInteractionAction: Action = {
 
     if (!parsedContent || !parsedContent.type) {
       return {
+        success: false,
         text: 'Could not parse trust interaction details. Please provide type and optionally: targetEntityId, impact, description',
-        error: true,
+        error: 'Invalid or missing interaction type',
       };
     }
 
@@ -56,8 +57,9 @@ export const recordTrustInteractionAction: Action = {
     if (!matchedType) {
       logger.error('[RecordTrustInteraction] Invalid evidence type:', evidenceType);
       return {
+        success: false,
         text: `Invalid interaction type. Valid types are: ${validTypes.join(', ')}`,
-        error: true,
+        error: 'Invalid evidence type provided',
       };
     }
 
@@ -94,6 +96,7 @@ export const recordTrustInteractionAction: Action = {
       });
 
       return {
+        success: true,
         text: `Trust interaction recorded: ${matchedType} with impact ${interaction.impact > 0 ? '+' : ''}${interaction.impact}`,
         data: {
           interaction,
@@ -103,8 +106,9 @@ export const recordTrustInteractionAction: Action = {
     } catch (error) {
       logger.error('[RecordTrustInteraction] Error recording interaction:', error);
       return {
+        success: false,
         text: 'Failed to record trust interaction. Please try again.',
-        error: true,
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   },
